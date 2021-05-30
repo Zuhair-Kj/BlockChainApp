@@ -1,0 +1,2 @@
+rootProject.name = "Block Chain"
+include ':app', ':core', ':browse'
