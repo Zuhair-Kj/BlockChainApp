@@ -9,7 +9,7 @@ import kotlinx.coroutines.launch
 import market.blockchain.browse.api.GetPriceInfoApi
 import market.blockchain.browse.model.PriceInfo
 import market.blockchain.browse.model.PriceInfoRequestParams
-import market.blockchain.core.Resource
+import market.blockchain.core.util.Resource
 
 class BrowsePriceViewModel(
     private val priceInfoApi: GetPriceInfoApi,
@@ -18,7 +18,7 @@ class BrowsePriceViewModel(
     val stateLiveData: LiveData<Resource<PriceInfo>>
     get() = mutableStateLiveData
 
-    val requestParams = PriceInfoRequestParams(4)
+    val requestParams = PriceInfoRequestParams(12)
 
     fun getPricesInfo() {
         val currentValue = stateLiveData.value?.data ?: PriceInfo()

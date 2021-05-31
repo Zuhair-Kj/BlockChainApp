@@ -1,4 +1,4 @@
-package market.blockchain.core
+package market.blockchain.core.util
 
 data class Resource<T>(val status: Status, val data: T? = null, val message: String = "") {
     enum class Status {

@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">Block Chain</string>
+    <string name="chart_date_format">dd MMM yyyy</string>
 </resources>
