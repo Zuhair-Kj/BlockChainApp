@@ -17,14 +17,15 @@ val browseModule = module {
         get<Retrofit>(named(SCOPE_DISCOVERY)).create(GetPriceInfoApi::class.java)
     }
 
-    single(named(SCOPE_DISCOVERY)) { Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .client(get())
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
+    single(named(SCOPE_DISCOVERY)) {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(get())
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
     }
 
     viewModel {
-        BrowsePriceViewModel(priceInfoApi = get())
+        BrowsePriceViewModel(priceInfoApi = get(), networkHelper = get())
     }
 }

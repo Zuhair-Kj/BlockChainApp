@@ -32,9 +32,7 @@ android {
         jvmTarget = '1.8'
     }
 
-    dataBinding {
-        enabled true
-    }
+    android.buildFeatures.dataBinding = true
 }
 
 dependencies {
@@ -60,6 +58,7 @@ dependencies {
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.4.2'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
     kapt "androidx.databinding:databinding-compiler:4.2.1"
+    implementation 'com.airbnb.android:lottie:3.6.0'
 
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'

@@ -9,24 +9,30 @@ import kotlinx.coroutines.launch
 import market.blockchain.browse.api.GetPriceInfoApi
 import market.blockchain.browse.model.PriceInfo
 import market.blockchain.browse.model.PriceInfoRequestParams
+import market.blockchain.core.util.NetworkHelper
 import market.blockchain.core.util.Resource
 
 class BrowsePriceViewModel(
     private val priceInfoApi: GetPriceInfoApi,
+    private val networkHelper: NetworkHelper,
     private val mutableStateLiveData: MutableLiveData<Resource<PriceInfo>> = MutableLiveData()
 ): ViewModel() {
     val stateLiveData: LiveData<Resource<PriceInfo>>
     get() = mutableStateLiveData
 
-    val requestParams = PriceInfoRequestParams(12)
+    val requestParams = PriceInfoRequestParams(4, 1)
 
     fun getPricesInfo() {
-        val currentValue = stateLiveData.value?.data ?: PriceInfo()
+        val currentValue = stateLiveData.value?.data
         viewModelScope.launch(Dispatchers.IO) {
             try {
                 mutableStateLiveData.postValue(Resource.loading(currentValue))
-                val result = priceInfoApi.getBitCoinPrice(requestParams.convertToMap())
-                mutableStateLiveData.postValue(Resource.success(result))
+                if (networkHelper.isConnected()) {
+                    val result = priceInfoApi.getBitCoinPrice(requestParams.convertToMap())
+                    mutableStateLiveData.postValue(Resource.success(result))
+                } else {
+                    mutableStateLiveData.postValue(Resource.networkError(currentValue))
+                }
             } catch (throwable: Throwable) {
                 mutableStateLiveData.postValue(Resource.error(currentValue, throwable.message ?: ""))
             }

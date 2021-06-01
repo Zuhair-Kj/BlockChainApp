@@ -3,6 +3,8 @@ package market.blockchain.browse.ui
 import android.graphics.DashPathEffect
 import android.graphics.Typeface
 import android.os.Bundle
+import android.view.View
+import android.widget.SeekBar
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.databinding.DataBindingUtil
@@ -15,6 +17,7 @@ import com.github.mikephil.charting.data.LineDataSet
 import com.github.mikephil.charting.formatter.IFillFormatter
 import com.github.mikephil.charting.formatter.ValueFormatter
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet
+import com.google.android.material.snackbar.Snackbar
 import market.blockchain.browse.R
 import market.blockchain.browse.databinding.ActivityBrowsePriceBinding
 import market.blockchain.browse.model.PriceInfo
@@ -24,6 +27,8 @@ import market.blockchain.core.util.Resource.Status.ERROR
 import market.blockchain.core.util.Resource.Status.LOADING
 import market.blockchain.core.util.Resource.Status.NETWORK_DISCONNECTED
 import market.blockchain.core.util.Resource.Status.SUCCESS
+import market.blockchain.core.util.hide
+import market.blockchain.core.util.show
 import market.blockchain.core.util.toStringTrimmed
 import org.koin.androidx.viewmodel.ext.android.viewModel
 import java.text.SimpleDateFormat
@@ -57,26 +62,85 @@ class BrowsePriceActivity : AppCompatActivity() {
     private val browsePriceObserver = Observer<Resource<PriceInfo>> { resource ->
         when(resource.status) {
             SUCCESS -> {
+                if (offlineSnackBar.isShownOrQueued)
+                    offlineSnackBar.dismiss()
                 resource.data?.let {
+                    binding.chart.show()
+                    binding.groupComponents.show()
+                    binding.lottieLoader.hide()
                     setChartData(it)
                 }
             }
             LOADING -> {
-
+                binding.chart.hide()
+                binding.layoutRetry.root.hide()
+                binding.lottieLoader.show()
             }
             ERROR -> {
-
+                binding.lottieLoader.hide()
+                binding.layoutRetry.root.show()
+                binding.chart.hide()
             }
             NETWORK_DISCONNECTED -> {
-
+                binding.lottieLoader.hide()
+                resource.data?.let {
+                    binding.chart.show()
+                } ?: kotlin.run {
+                    binding.layoutRetry.root.show()
+                    binding.chart.hide()
+                }
+                offlineSnackBar.show()
             }
         }
+    }
+
+    private val seekBarChangeListener = object: SeekBar.OnSeekBarChangeListener {
+        override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+            if (seekBar.id == R.id.seek_bar_time_span) {
+                binding.textViewTimeSpan.text = resources.getQuantityString(
+                    R.plurals.time_span_weeks_format,
+                    progress,
+                    progress
+                )
+            } else {
+                binding.textViewAverage.text = resources.getQuantityString(
+                    R.plurals.average_weeks_format,
+                    progress,
+                    progress
+                )
+            }
+        }
+
+        override fun onStartTrackingTouch(seekBar: SeekBar) { }
+
+        override fun onStopTrackingTouch(seekBar: SeekBar) {
+            val progress = seekBar.progress
+            if (seekBar.id == R.id.seek_bar_time_span) {
+                browsePriceViewModel.requestParams.timeSpanInWeeks = progress
+            } else {
+                browsePriceViewModel.requestParams.rollingAverageInWeeks = progress
+            }
+            browsePriceViewModel.getPricesInfo()
+        }
+    }
+
+    private val onRetryClickListener = View.OnClickListener {
+        browsePriceViewModel.getPricesInfo()
+    }
+
+    private val offlineSnackBar by lazy {
+        Snackbar.make(binding.coordinatorLayout, R.string.offline, Snackbar.LENGTH_INDEFINITE)
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_browse_price)
 
+        browsePriceViewModel.requestParams.let {
+            initProgressBars(it.timeSpanInWeeks, it.rollingAverageInWeeks)
+        }
+
+        binding.layoutRetry.buttonRetry.setOnClickListener(onRetryClickListener)
         initialiseChart()
         browsePriceViewModel.stateLiveData.observe(this, browsePriceObserver)
         browsePriceViewModel.getPricesInfo()
@@ -131,6 +195,25 @@ class BrowsePriceActivity : AppCompatActivity() {
 
             chart.axisRight.isEnabled = false
         }
+    }
+
+    private fun initProgressBars(timeSpanWeeks: Int, averageWeeks: Int) {
+        binding.seekBarTimeSpan.setOnSeekBarChangeListener(seekBarChangeListener)
+        binding.seekBarAverage.setOnSeekBarChangeListener(seekBarChangeListener)
+
+        binding.seekBarTimeSpan.progress = timeSpanWeeks
+        binding.seekBarAverage.progress = averageWeeks
+//        binding.textViewTimeSpan.text = resources.getQuantityString(
+//            R.plurals.time_span_weeks_format,
+//            timeSpanWeeks,
+//            timeSpanWeeks
+//        )
+//
+//        binding.textViewAverage.text = resources.getQuantityString(
+//            R.plurals.average_weeks_format,
+//            averageWeeks,
+//            averageWeeks
+//        )
     }
 
     private fun setChartData(priceInfo: PriceInfo) {

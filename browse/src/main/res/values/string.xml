@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="time_span_weeks_format">
+        <item quantity="one">Time span %d week</item>
+        <item quantity="other">Time span %d weeks</item>
+    </plurals>
+
+    <plurals name="average_weeks_format">
+        <item quantity="one">Average %d week</item>
+        <item quantity="other">Average %d weeks</item>
+    </plurals>
+</resources>

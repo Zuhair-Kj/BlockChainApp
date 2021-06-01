@@ -1,4 +1,6 @@
 <resources>
     <string name="app_name">Block Chain</string>
-    <string name="chart_date_format">dd MMM yyyy</string>
+    <string name="error">An error occurred while requesting information.</string>
+    <string name="retry">Retry</string>
+    <string name="offline">You are offline</string>
 </resources>
