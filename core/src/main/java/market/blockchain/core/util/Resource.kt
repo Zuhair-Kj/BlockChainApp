@@ -1,6 +1,6 @@
 package market.blockchain.core.util
 
-data class Resource<T>(val status: Status, val data: T? = null, val message: String = "") {
+data class Resource<T>(val status: Status, val data: T? = null, val message: String? = null) {
     enum class Status {
         SUCCESS,
         ERROR,
@@ -14,7 +14,7 @@ data class Resource<T>(val status: Status, val data: T? = null, val message: Str
         }
 
         @JvmOverloads
-        fun <T> error(data: T? = null, message: String = ""): Resource<T> {
+        fun <T> error(data: T? = null, message: String? = null): Resource<T> {
             return Resource(Status.ERROR, data, message)
         }
 

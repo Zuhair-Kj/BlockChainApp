@@ -16,14 +16,11 @@ fun View?.hide() {
     this?.visibility = View.INVISIBLE
 }
 
-fun View?.gone() {
-    this?.visibility = View.GONE
-}
-
 fun View?.show() {
     this?.visibility = View.VISIBLE
 }
 
 fun Float.round(numOfDigits: Int): Float {
+    if (numOfDigits < 1) return this
     return BigDecimal(this.toDouble()).setScale(numOfDigits, RoundingMode.HALF_EVEN).toFloat()
 }

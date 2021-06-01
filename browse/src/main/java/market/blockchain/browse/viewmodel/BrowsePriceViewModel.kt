@@ -4,6 +4,8 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import market.blockchain.browse.api.GetPriceInfoApi
@@ -15,7 +17,9 @@ import market.blockchain.core.util.Resource
 class BrowsePriceViewModel(
     private val priceInfoApi: GetPriceInfoApi,
     private val networkHelper: NetworkHelper,
-    private val mutableStateLiveData: MutableLiveData<Resource<PriceInfo>> = MutableLiveData()
+    private val mutableStateLiveData: MutableLiveData<Resource<PriceInfo>> = MutableLiveData(),
+    private val testScope: CoroutineScope? = null,
+    private val testDispatcher: CoroutineDispatcher? = null
 ): ViewModel() {
     val stateLiveData: LiveData<Resource<PriceInfo>>
     get() = mutableStateLiveData
@@ -24,7 +28,7 @@ class BrowsePriceViewModel(
 
     fun getPricesInfo() {
         val currentValue = stateLiveData.value?.data
-        viewModelScope.launch(Dispatchers.IO) {
+        (testScope ?: viewModelScope).launch(testDispatcher ?: Dispatchers.IO) {
             try {
                 mutableStateLiveData.postValue(Resource.loading(currentValue))
                 if (networkHelper.isConnected()) {
@@ -34,7 +38,7 @@ class BrowsePriceViewModel(
                     mutableStateLiveData.postValue(Resource.networkError(currentValue))
                 }
             } catch (throwable: Throwable) {
-                mutableStateLiveData.postValue(Resource.error(currentValue, throwable.message ?: ""))
+                mutableStateLiveData.postValue(Resource.error(currentValue, throwable.message))
             }
         }
     }
