@@ -143,7 +143,8 @@ class BrowsePriceActivity : AppCompatActivity() {
         binding.layoutRetry.buttonRetry.setOnClickListener(onRetryClickListener)
         initialiseChart()
         browsePriceViewModel.stateLiveData.observe(this, browsePriceObserver)
-        browsePriceViewModel.getPricesInfo()
+        if (browsePriceViewModel.stateLiveData.value?.data == null)
+            browsePriceViewModel.getPricesInfo()
     }
 
     private fun initialiseChart() {
